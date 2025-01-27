@@ -1,8 +1,11 @@
 #![feature(linked_list_cursors)]
+#![allow(clippy::module_inception)] // TODO: better module names
 
-use stuff::Que;
+use que::que::Que;
 
-pub mod stuff;
+pub mod library;
+pub mod playlist;
+pub mod que;
 
 fn main() {
     let mut q = Que::new();
