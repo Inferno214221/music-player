@@ -1,4 +1,4 @@
-use std::{collections::BTreeSet, sync::Weak};
+use std::{collections::BTreeSet, sync::Arc};
 
 use crate::que::{playable::Playable, shuffleable::Shuffleable};
 
@@ -7,7 +7,7 @@ use super::playlist::Playlist;
 #[derive(Debug)]
 pub struct SortedPlaylist {
     name: String,
-    items: BTreeSet<Weak<dyn Playable>> // Sorting passes through the Arc
+    items: BTreeSet<Arc<dyn Playable>> // Sorting passes through the Arc
 }
 
 impl SortedPlaylist {
@@ -17,7 +17,7 @@ impl SortedPlaylist {
     }
 
     /// Returns the [`SortedPlaylist`]'s [`Playable`] items.
-    pub fn items(&self) -> &BTreeSet<Weak<dyn Playable>> {
+    pub fn items(&self) -> &BTreeSet<Arc<dyn Playable>> {
         &self.items
     }
 }

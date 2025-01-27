@@ -1,4 +1,4 @@
-use std::sync::Weak;
+use std::sync::Arc;
 
 use crate::que::{playable::Playable, shuffleable::Shuffleable};
 
@@ -7,7 +7,7 @@ use super::playlist::Playlist;
 #[derive(Debug)]
 pub struct LinearPlaylist {
     name: String,
-    items: Vec<Weak<dyn Playable>>
+    items: Vec<Arc<dyn Playable>>
 }
 
 impl LinearPlaylist {
@@ -17,7 +17,7 @@ impl LinearPlaylist {
     }
 
     /// Returns the [`LinearPlaylist`]'s [`Playable`] items.
-    pub fn items(&self) -> &Vec<Weak<dyn Playable>> {
+    pub fn items(&self) -> &Vec<Arc<dyn Playable>> {
         &self.items
     }
 }

@@ -4,3 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+audiotags = "0.5.0"
+derive_more = { version = "1.0.0", features = ["display", "error"] }
+glob = "0.3.2"
