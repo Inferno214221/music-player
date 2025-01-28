@@ -7,7 +7,7 @@ use super::{artist::Artist, track::Track};
 #[derive(Debug)]
 pub struct Album {
     name: String,
-    artist: Option<Weak<Artist>>,
+    artist: Weak<Artist>,
     tracks: Vec<Arc<Track>>, // ? Should this be a set of some type
     year: Option<i32>,
     total_tracks: Option<u16>,
@@ -18,7 +18,7 @@ impl Album {
     /// Creates a new [`Album`] with the given values.
     pub fn new(
         name: String,
-        artist: Option<Weak<Artist>>,
+        artist: Weak<Artist>,
         tracks: Vec<Arc<Track>>,
         year: Option<i32>,
         total_tracks: Option<u16>,
@@ -40,7 +40,7 @@ impl Album {
     }
 
     /// Returns a weak arc to the [`Album`]'s [`Artist`].
-    pub fn album(&self) -> Option<Weak<Artist>> {
+    pub fn album(&self) -> Weak<Artist> {
         // Should this just return a weak ref?
         self.artist.clone()
     }
@@ -75,6 +75,7 @@ impl Album {
         self.tracks.len()
     }
 
+    /// Appends the provided [`Track`] to this [`Album`]'s tracks.
     pub fn push_track(&mut self, track: Arc<Track>) {
         self.tracks.push(track);
     }

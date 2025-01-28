@@ -11,6 +11,17 @@ pub struct Artist {
 }
 
 impl Artist {
+    /// Creates a new [`Artist`] with the given values.
+    pub fn new(
+        name: String,
+        albums: Vec<Arc<Album>>
+    ) -> Artist {
+        Artist {
+            name,
+            albums
+        }
+    }
+
     /// Returns the [`Artist`]'s name.
     pub fn name(&self) -> &str {
         &self.name
@@ -19,6 +30,11 @@ impl Artist {
     /// Returns the [`Artist`]'s [`Album`]s.
     pub fn albums(&self) -> &Vec<Arc<Album>> {
         &self.albums
+    }
+
+    /// Appends the provided [`Album`] to this [`Artist`]'s tracks.
+    pub fn push_album(&mut self, album: Arc<Album>) {
+        self.albums.push(album);
     }
 }
 
