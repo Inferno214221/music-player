@@ -1,6 +1,6 @@
-use std::sync::{Arc, Weak};
+use std::{cmp::Ordering, collections::BTreeSet, sync::{Arc, Weak}};
 
-use crate::que::{playable::Playable, shuffleable::Shuffleable};
+use crate::queue::{playable::Playable, shuffleable::Shuffleable};
 
 use super::{artist::Artist, track::Track};
 
@@ -8,7 +8,7 @@ use super::{artist::Artist, track::Track};
 pub struct Album {
     name: String,
     artist: Weak<Artist>,
-    tracks: Vec<Arc<Track>>, // ? Should this be a set of some type
+    tracks: BTreeSet<Arc<Track>>, // ? Should this be a set of some type
     year: Option<i32>,
     total_tracks: Option<u16>,
     total_discs: Option<u16>
@@ -19,7 +19,7 @@ impl Album {
     pub fn new(
         name: String,
         artist: Weak<Artist>,
-        tracks: Vec<Arc<Track>>,
+        tracks: BTreeSet<Arc<Track>>,
         year: Option<i32>,
         total_tracks: Option<u16>,
         total_discs: Option<u16>
@@ -40,13 +40,13 @@ impl Album {
     }
 
     /// Returns a weak arc to the [`Album`]'s [`Artist`].
-    pub fn album(&self) -> Weak<Artist> {
+    pub fn artist(&self) -> Weak<Artist> {
         // Should this just return a weak ref?
         self.artist.clone()
     }
 
     /// Returns the [`Album`]'s [`Track`]s.
-    pub fn tracks(&self) -> &Vec<Arc<Track>> {
+    pub fn tracks(&self) -> &BTreeSet<Arc<Track>> {
         &self.tracks
     }
 
@@ -75,12 +75,48 @@ impl Album {
         self.tracks.len()
     }
 
-    /// Appends the provided [`Track`] to this [`Album`]'s tracks.
-    pub fn push_track(&mut self, track: Arc<Track>) {
-        self.tracks.push(track);
+    /// Inserts the provided [`Track`] into this [`Album`]'s tracks.
+    pub fn insert_track(&mut self, track: Arc<Track>) {
+        self.tracks.insert(track);
     }
 }
 
 impl Playable for Album {}
 
 impl Shuffleable for Album {}
+
+impl PartialEq for Album {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name &&
+        self.year == other.year &&
+        self.total_tracks == other.total_tracks &&
+        self.artist.upgrade() == other.artist.upgrade()
+        // Exclude tracks to prevent recursion
+    }
+}
+
+impl Eq for Album {}
+
+impl PartialOrd for Album {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Album {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match self.artist.upgrade().partial_cmp(&other.artist.upgrade()) {
+            Some(Ordering::Equal) | None => (),
+            Some(ord) => return ord
+        }
+        match self.year.partial_cmp(&other.year) {
+            Some(Ordering::Equal) | None => (),
+            Some(ord) => return ord
+        }
+        match self.name.cmp(&other.name) {
+            Ordering::Equal => (),
+            ord => return ord
+        }
+        self.total_tracks.cmp(&other.total_tracks)
+    }
+}

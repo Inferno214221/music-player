@@ -1,6 +1,6 @@
 use std::{collections::BTreeSet, sync::Arc};
 
-use crate::que::{playable::Playable, shuffleable::Shuffleable};
+use crate::queue::{playable::Playable, shuffleable::Shuffleable};
 
 use super::playlist::Playlist;
 

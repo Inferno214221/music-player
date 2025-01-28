@@ -1,5 +1,5 @@
 use std::collections::btree_map::Entry;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::sync::{Arc, Weak};
 
 use audiotags::Tag;
@@ -7,7 +7,7 @@ use derive_more::derive::{Display, Error};
 use glob::glob;
 
 use crate::playlist::playlist::Playlist;
-use crate::que::{playable::Playable, shuffleable::Shuffleable};
+use crate::queue::{playable::Playable, shuffleable::Shuffleable};
 
 use super::album::Album;
 use super::artist::Artist;
@@ -17,7 +17,7 @@ use super::track::Track;
 #[derive(Debug)]
 pub struct Library {
     name: String,
-    artists: Vec<Arc<Artist>>, // ? Should this be a set of some type
+    artists: BTreeSet<Arc<Artist>>, // ? Should this be a set of some type
     playlists: Vec<Weak<dyn Playlist>>
 }
 
@@ -28,7 +28,7 @@ impl Library {
     }
 
     /// Returns the [`Library`]'s [`Artist`]s.
-    pub fn albums(&self) -> &Vec<Arc<Artist>> {
+    pub fn albums(&self) -> &BTreeSet<Arc<Artist>> {
         &self.artists
     }
 
@@ -81,7 +81,7 @@ impl From<FileReadErr> for LibraryReadErr {
     }
 }
 
-pub fn read_library(dir: String) -> Result<Vec<Arc<Artist>>, LibraryReadErr> {
+pub fn read_library(dir: String) -> Result<BTreeSet<Arc<Artist>>, LibraryReadErr> {
     let dir_glob = dir + "/*/*/*.mp3";
     let tags = glob(&dir_glob).or(Err(FileReadErr::Pattern))?
         .filter_map(|file| file.ok()).map(|file| Ok((
@@ -89,7 +89,7 @@ pub fn read_library(dir: String) -> Result<Vec<Arc<Artist>>, LibraryReadErr> {
             file
         ))).collect::<Result<Vec<_>, FileReadErr>>()?;
 
-    let mut tracks = Vec::new();
+    let mut tracks = BTreeSet::new();
     let mut albums: BTreeMap<(&str, &str), Arc<Album>> = BTreeMap::new();
     let mut artists: BTreeMap<&str, Arc<Artist>> = BTreeMap::new();
     for (tag, path) in tags.iter() {
@@ -102,7 +102,7 @@ pub fn read_library(dir: String) -> Result<Vec<Arc<Artist>>, LibraryReadErr> {
             if let Entry::Vacant(artist_entry) = artists.entry(tag_artist) {
                 let new_artist = Arc::new(Artist::new(
                     tag_artist.to_owned(),
-                    Vec::new()
+                    BTreeSet::new()
                 ));
                 artist_entry.insert(new_artist);
             }
@@ -112,14 +112,14 @@ pub fn read_library(dir: String) -> Result<Vec<Arc<Artist>>, LibraryReadErr> {
             let new_album = Arc::new(Album::new(
                 tag_album.title.to_owned(),
                 Arc::downgrade(artist),
-                Vec::new(),
+                BTreeSet::new(),
                 tag.year(),
                 tag.total_tracks(),
                 tag.total_discs()
             ));
 
             unsafe {
-                Arc::get_mut_unchecked(artist).push_album(new_album.clone())
+                Arc::get_mut_unchecked(artist).insert_album(new_album.clone())
             };
 
             album_entry.insert(new_album);
@@ -138,14 +138,14 @@ pub fn read_library(dir: String) -> Result<Vec<Arc<Artist>>, LibraryReadErr> {
         // TODO: I'm pretty sure this is safe, but it still feels off.
         // Only done for partial initialisation with two way references.
         unsafe {
-            Arc::get_mut_unchecked(album).push_track(track.clone())
+            Arc::get_mut_unchecked(album).insert_track(track.clone())
         };
 
-        tracks.push(track);
+        tracks.insert(track);
     };
     // println!("{:?}", tracks);
-    // println!("{:?}", albums.values().collect::<Vec<_>>());
-    // println!("{:?}", artists.values().collect::<Vec<_>>());
+    // println!("{:?}", albums.values().collect::<BTreeSet<_>>());
+    // println!("{:?}", artists.values().collect::<BTreeSet<_>>());
 
     Ok(artists.into_values().collect())
 }

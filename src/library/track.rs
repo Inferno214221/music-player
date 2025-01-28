@@ -1,6 +1,6 @@
-use std::{path::{Path, PathBuf}, sync::Weak};
+use std::{cmp::Ordering, path::{Path, PathBuf}, sync::Weak};
 
-use crate::que::playable::Playable;
+use crate::queue::playable::Playable;
 
 use super::album::Album;
 
@@ -64,3 +64,38 @@ impl Track {
 }
 
 impl Playable for Track {}
+
+impl PartialEq for Track {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name &&
+        self.path == other.path &&
+        self.album.upgrade() == other.album.upgrade() &&
+        self.track_number == other.track_number
+    }
+}
+
+impl Eq for Track {}
+
+impl PartialOrd for Track {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Track {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match self.album.upgrade().partial_cmp(&other.album.upgrade()) {
+            Some(Ordering::Equal) | None => (),
+            Some(ord) => return ord
+        }
+        match self.track_number.partial_cmp(&other.track_number) {
+            Some(Ordering::Equal) | None => (),
+            Some(ord) => return ord
+        }
+        match self.name.cmp(&other.name) {
+            Ordering::Equal => (),
+            ord => return ord
+        }
+        self.path.cmp(&other.path)
+    }
+}
