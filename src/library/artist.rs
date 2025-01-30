@@ -1,4 +1,4 @@
-use std::{cmp::Ordering, collections::BTreeSet, sync::Arc};
+use std::{cmp::Ordering, collections::BTreeSet, fmt::{self, Display, Formatter, Write}, sync::Arc};
 
 use crate::queue::{playable::Playable, shuffleable::Shuffleable};
 
@@ -7,11 +7,11 @@ use super::album::Album;
 #[derive(Debug)]
 pub struct Artist {
     name: String,
-    albums: BTreeSet<Arc<Album>> // ? Should this be a set of some type
+    albums: BTreeSet<Arc<Album>>
 }
 
 impl Artist {
-    /// Creates a new [`Artist`] with the given values.
+    /// Creates a new [`Artist`] with the provided values.
     pub fn new(
         name: String,
         albums: BTreeSet<Arc<Album>>
@@ -38,9 +38,23 @@ impl Artist {
     }
 }
 
-impl Playable for Artist {} // ? Does this make sense
+impl Playable for Artist {}
 
 impl Shuffleable for Artist {}
+
+impl Display for Artist {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{} [\n{}]",
+            self.name,
+            self.albums.iter().fold(String::new(), |mut output, b| {
+                let _ = writeln!(output, "  {}", b.to_string().replace('\n', "\n  "));
+                output
+            })
+        )
+    }
+}
 
 impl PartialEq for Artist {
     fn eq(&self, other: &Self) -> bool {

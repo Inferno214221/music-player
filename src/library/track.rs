@@ -1,4 +1,4 @@
-use std::{cmp::Ordering, path::{Path, PathBuf}, sync::Weak};
+use std::{cmp::Ordering, fmt::{self, Display, Formatter}, path::{Path, PathBuf}, sync::Weak};
 
 use crate::queue::playable::Playable;
 
@@ -14,7 +14,7 @@ pub struct Track {
 }
 
 impl Track {
-    /// Creates a new [`Track`] with the given values.
+    /// Creates a new [`Track`] with the provided values.
     pub fn new(
         name: String,
         path: PathBuf,
@@ -65,12 +65,32 @@ impl Track {
 
 impl Playable for Track {}
 
+impl Display for Track {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}/{} {} - {}",
+            self.disc_number
+                .map(|t| t.to_string())
+                .unwrap_or(String::from("?")),
+            self.track_number
+                .map(|t| t.to_string())
+                .unwrap_or(String::from("?")),
+            self.name,
+            self.album.upgrade()
+                .map(|a| a.name().to_owned())
+                .unwrap_or(String::from("Unknown"))
+        )
+    }
+}
+
 impl PartialEq for Track {
     fn eq(&self, other: &Self) -> bool {
         self.name == other.name &&
         self.path == other.path &&
         self.album.upgrade() == other.album.upgrade() &&
-        self.track_number == other.track_number
+        self.track_number == other.track_number &&
+        self.disc_number == other.disc_number
     }
 }
 
@@ -85,6 +105,10 @@ impl PartialOrd for Track {
 impl Ord for Track {
     fn cmp(&self, other: &Self) -> Ordering {
         match self.album.upgrade().partial_cmp(&other.album.upgrade()) {
+            Some(Ordering::Equal) | None => (),
+            Some(ord) => return ord
+        }
+        match self.disc_number.partial_cmp(&other.disc_number) {
             Some(Ordering::Equal) | None => (),
             Some(ord) => return ord
         }

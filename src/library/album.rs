@@ -1,4 +1,4 @@
-use std::{cmp::Ordering, collections::BTreeSet, sync::{Arc, Weak}};
+use std::{cmp::Ordering, collections::BTreeSet, fmt::{self, Display, Formatter, Write}, sync::{Arc, Weak}};
 
 use crate::queue::{playable::Playable, shuffleable::Shuffleable};
 
@@ -8,14 +8,14 @@ use super::{artist::Artist, track::Track};
 pub struct Album {
     name: String,
     artist: Weak<Artist>,
-    tracks: BTreeSet<Arc<Track>>, // ? Should this be a set of some type
+    tracks: BTreeSet<Arc<Track>>,
     year: Option<i32>,
     total_tracks: Option<u16>,
     total_discs: Option<u16>
 }
 
 impl Album {
-    /// Creates a new [`Album`] with the given values.
+    /// Creates a new [`Album`] with the provided values.
     pub fn new(
         name: String,
         artist: Weak<Artist>,
@@ -84,6 +84,31 @@ impl Album {
 impl Playable for Album {}
 
 impl Shuffleable for Album {}
+
+impl Display for Album {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{} ({}/{}) - {} ({}) [\n{}]",
+            self.name,
+            self.track_count(),
+            self.total_tracks
+                .map(|t| t.to_string())
+                .unwrap_or(String::from("?")),
+            self.artist.upgrade()
+                .map(|a| a.name().to_owned())
+                .unwrap_or(String::from("Unknown")),
+            match self.year {
+                Some(year) => year.to_string(),
+                None => String::from("Unknown")
+            },
+            self.tracks.iter().fold(String::new(), |mut output, b| {
+                let _ = writeln!(output, "  {}", b);
+                output
+            })
+        )
+    }
+}
 
 impl PartialEq for Album {
     fn eq(&self, other: &Self) -> bool {

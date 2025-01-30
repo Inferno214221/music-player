@@ -1,50 +1,51 @@
-use std::{collections::{linked_list::CursorMut, LinkedList}, sync::Weak};
+use std::sync::Weak;
 
 use super::queueable::Queueable;
 
-pub type QueueCursor<'a> = CursorMut<'a, Weak<dyn Queueable>>;
-
 #[derive(Debug)]
-pub struct Queue<'a> {
-    items: LinkedList<Weak<dyn Queueable>>,
-    cursor: Option<QueueCursor<'a>>
+pub struct Queue {
+    items: Vec<Weak<dyn Queueable>>,
+    index: usize
 }
 
-impl<'a> Queue<'a> {
+impl Queue {
     /// Creates an empty [`Queue`]. (No items and a lazy cursor.)
-    pub fn new() -> Queue<'a> {
+    pub fn new() -> Queue {
         Queue {
-            items: LinkedList::new(),
-            cursor: None
+            items: Vec::new(),
+            index: 0
         }
     }
 
     /// Returns a mutable reference to the [`Queue`]'s items.
-    pub fn items(&'a mut self) -> &'a mut LinkedList<Weak<dyn Queueable>> {
+    pub fn items(&mut self) -> &mut Vec<Weak<dyn Queueable>> {
         &mut self.items
     }
 
-    /// Returns a mutable reference to the [`Queue`]'s cursor. The cursor is created now if it hasn't
-    /// been already.
-    pub fn cursor(&'a mut self) -> &'a mut QueueCursor<'a> {
-        if self.cursor.is_none() {
-            self.cursor = Some(self.items.cursor_front_mut());
-        }
-        self.cursor.as_mut().unwrap()
+    /// Returns a mutable reference to the [`Queue`]'s cursor. The cursor is created now if it
+    /// hasn't been already.
+    pub fn current(&mut self) -> Option<&Weak<dyn Queueable>> {
+        self.items.get(self.index)
     }
 
     /// Inserts the provided [`Queueable`] into the [`Queue`] after the current item.
-    pub fn queue_next(&'a mut self, queueable: Weak<dyn Queueable>) {
-        self.cursor().insert_after(queueable);
+    pub fn add_next(&mut self, queueable: Weak<dyn Queueable>) { // TODO: should own with Arc
+        self.items.insert(self.index + 1, queueable);
     }
 
     /// Appends the provided [`Queueable`] to the end of the [`Queue`].
-    pub fn queue_end(&'a mut self, queueable: Weak<dyn Queueable>) {
-        self.items().push_back(queueable);
+    pub fn add_end(&mut self, queueable: Weak<dyn Queueable>) {
+        self.items().push(queueable);
     }
+
+    // pub fn play(&mut self, sl: &Soloud) -> Option<()> {
+    //     let current_item = self.cursor().current().and_then(|w| w.upgrade().clone())?;
+    //     current_item.exec(sl);
+    //     None
+    // }
 }
 
-impl Default for Queue<'_> {
+impl Default for Queue {
     fn default() -> Self {
         Self::new()
     }

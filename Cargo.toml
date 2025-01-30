@@ -7,3 +7,4 @@ edition = "2021"
 audiotags = "0.5.0"
 derive_more = { version = "1.0.0", features = ["display", "error"] }
 glob = "0.3.2"
+soloud = "1.0.5"

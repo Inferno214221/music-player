@@ -1,5 +1,6 @@
 use std::collections::btree_map::Entry;
 use std::collections::{BTreeMap, BTreeSet};
+use std::fmt::{Display, Write};
 use std::sync::{Arc, Weak};
 
 use audiotags::Tag;
@@ -17,7 +18,7 @@ use super::track::Track;
 #[derive(Debug)]
 pub struct Library {
     name: String,
-    artists: BTreeSet<Arc<Artist>>, // ? Should this be a set of some type
+    artists: BTreeSet<Arc<Artist>>,
     playlists: Vec<Weak<dyn Playlist>>
 }
 
@@ -28,7 +29,7 @@ impl Library {
     }
 
     /// Returns the [`Library`]'s [`Artist`]s.
-    pub fn albums(&self) -> &BTreeSet<Arc<Artist>> {
+    pub fn artists(&self) -> &BTreeSet<Arc<Artist>> {
         &self.artists
     }
 
@@ -49,6 +50,15 @@ impl Library {
 impl Playable for Library {} // ? Does this make sense
 
 impl Shuffleable for Library {}
+
+impl Display for Library {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.artists().iter().fold(String::new(), |mut output, b| {
+            let _ = writeln!(output, "{}", b);
+            output
+        }))
+    }
+}
 
 #[derive(Debug, Display, Error, PartialEq)]
 pub enum MissingMetaErr {
@@ -113,7 +123,7 @@ pub fn read_library(dir: String) -> Result<BTreeSet<Arc<Artist>>, LibraryReadErr
                 tag_album.title.to_owned(),
                 Arc::downgrade(artist),
                 BTreeSet::new(),
-                tag.year(),
+                tag.year().or_else(|| tag.date().map(|d| d.year)),
                 tag.total_tracks(),
                 tag.total_discs()
             ));
