@@ -1,3 +1,7 @@
-use std::fmt::Debug;
+use std::{fmt::Debug, sync::Arc};
 
-pub trait Queueable: Debug {}
+use super::executable::Executable;
+
+pub trait Queueable: Debug {
+    fn executables(&self) -> Vec<Arc<dyn Executable>>;
+}

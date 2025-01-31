@@ -3,9 +3,11 @@
 
 #![allow(clippy::module_inception)] // TODO: better module names
 
+use core::time;
+use std::{thread, sync::{Arc, Weak}};
 
 use library::library::Library;
-use soloud::Soloud;
+use queue::{player::Player, queue::Queue, queue_operations::QueuePause, queueable::Queueable, shuffleable::Shuffleable};
 
 pub mod library;
 pub mod playlist;
@@ -16,13 +18,30 @@ fn main() {
             String::from("Main"),
             String::from("/home/inferno214221/Music")
     ).unwrap();
-    // dbg!(&l);
-    println!("{}", l);
+    // println!("{}", &l);
 
-    // let sl = Soloud::default().unwrap();
+    let s = Arc::new(l.shuffled());
+    // println!("{}", l.shuffled());
 
-    // let mut q = Queue::new();
-    // let a = l.artists().first().unwrap().clone().as_queueable();
-    // q.add_next(Arc::downgrade(&a));
-    // q.play(&sl);
+    let mut q = Queue::new();
+    let pause = Arc::new(QueuePause);
+    q.add_next(Arc::downgrade(&s) as Weak<dyn Queueable>);
+    q.add_next(Arc::downgrade(&pause) as Weak<dyn Queueable>);
+
+    // let (mut manager, _backend) = awedio::start().unwrap();
+    // let (sound, mut controller) = q.exec(None).unwrap().unwrap();
+    // manager.play(Box::new(sound));
+    // thread::sleep(time::Duration::from_secs(5));
+    // controller.set_paused(true);
+    // thread::sleep(time::Duration::from_secs(5));
+    // controller.set_paused(false);
+    // thread::sleep(time::Duration::from_secs(5));
+    // manager.clear();
+    // let (sound_1, mut controller) = q.exec(Some(controller)).unwrap().unwrap();
+    // manager.play(Box::new(sound_1));
+    // thread::sleep(time::Duration::from_secs(30));
+
+    let _ = q.play();
+    // let _ = q.play();
+    thread::sleep(time::Duration::from_secs(10));
 }

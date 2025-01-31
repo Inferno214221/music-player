@@ -1,8 +1,9 @@
 use std::fmt::Debug;
 
-use super::queueable::Queueable;
+use super::{queueable::Queueable, shuffled::Shuffled};
 
-pub trait Shuffleable: Debug {}
-
-// Needs to track its own shuffling.
-impl Queueable for dyn Shuffleable {}
+pub trait Shuffleable: Queueable + Debug + Sized {
+    fn shuffled(&self) -> Shuffled {
+        Shuffled::from(self)
+    }
+}

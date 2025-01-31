@@ -1,10 +1,12 @@
-use std::{cmp::Ordering, fmt::{self, Display, Formatter}, path::{Path, PathBuf}, sync::Weak};
+use std::{cmp::Ordering, fmt::{self, Display, Formatter}, path::{Path, PathBuf}, sync::{Arc, Weak}};
 
-use crate::queue::playable::Playable;
+use awedio::{sounds::{self}, Sound};
+
+use crate::{playlist::playlistable::Playlistable, queue::{executable::{Executable, PlayError}, player::Player, queueable::Queueable}};
 
 use super::album::Album;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Track {
     name: String,
     path: PathBuf,
@@ -63,7 +65,43 @@ impl Track {
     }
 }
 
-impl Playable for Track {}
+// impl Queueable for Track {
+//     fn executables(&self) -> Vec<Arc<dyn Executable>> {
+//         // FIXME: not sure that this is correct
+//         vec![Arc::new(self.clone())]
+//     }
+// }
+
+impl Queueable for Arc<Track> {
+    fn executables(&self) -> Vec<Arc<dyn Executable>> {
+        vec![self.clone()]
+    }
+}
+
+impl Executable for Track {
+    fn exec(&self, player: &mut Player) -> Result<(), PlayError> {
+        let (_sound, controller) = sounds::open_file(self.path())
+            .or(Err(PlayError::FailedLoad))?
+            .pausable()
+            .controllable();
+        println!("{:?}", self.path());
+        *player.controller() = Some(controller);
+        Ok(())
+        // Ok(Some(
+        //     sounds::open_file(self.path()).or(Err(PlayError::FailedLoad))?
+        //         .pausable()
+        //         .controllable()
+        // ))
+
+        // let mut wav = Wav::default();
+        // dbg!(wav.load(dbg!(self.path())).or(Err(PlayError::FailedLoad))?);
+        // let r = sl.play(&wav);
+        // std::thread::sleep(std::time::Duration::from_millis((wav.length() * 1000_f64) as u64));
+        // Ok(r)
+    }
+}
+
+impl Playlistable for Track {}
 
 impl Display for Track {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {

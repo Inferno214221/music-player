@@ -1,11 +1,12 @@
 use std::sync::Weak;
 
-use super::queueable::Queueable;
+use super::{executable::PlayError, player::Player, queueable::Queueable};
 
 #[derive(Debug)]
 pub struct Queue {
     items: Vec<Weak<dyn Queueable>>,
-    index: usize
+    index: usize,
+    player: Player
 }
 
 impl Queue {
@@ -13,7 +14,8 @@ impl Queue {
     pub fn new() -> Queue {
         Queue {
             items: Vec::new(),
-            index: 0
+            index: 0,
+            player: Player::new().unwrap()
         }
     }
 
@@ -30,7 +32,11 @@ impl Queue {
 
     /// Inserts the provided [`Queueable`] into the [`Queue`] after the current item.
     pub fn add_next(&mut self, queueable: Weak<dyn Queueable>) { // TODO: should own with Arc
-        self.items.insert(self.index + 1, queueable);
+        let new_index = match self.current() {
+            Some(_) => self.index + 1,
+            None => self.index
+        };
+        self.items.insert(new_index, queueable);
     }
 
     /// Appends the provided [`Queueable`] to the end of the [`Queue`].
@@ -38,11 +44,18 @@ impl Queue {
         self.items().push(queueable);
     }
 
-    // pub fn play(&mut self, sl: &Soloud) -> Option<()> {
-    //     let current_item = self.cursor().current().and_then(|w| w.upgrade().clone())?;
-    //     current_item.exec(sl);
-    //     None
-    // }
+    pub fn play(&mut self) -> Result<(), PlayError> {
+        self.current().unwrap()
+            .upgrade().unwrap()
+            .executables().first().unwrap()
+            .exec(&mut self.player)
+    }
+
+    pub fn skip(&mut self) -> Result<(), PlayError> {
+        self.player.manager().clear();
+        self.index += 1;
+        self.play()
+    }
 }
 
 impl Default for Queue {

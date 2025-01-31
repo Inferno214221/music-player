@@ -1,13 +1,13 @@
 use std::sync::Arc;
 
-use crate::queue::{playable::Playable, shuffleable::Shuffleable};
+use crate::queue::{queueable::Queueable, shuffleable::Shuffleable};
 
-use super::playlist::Playlist;
+use super::{playlist::Playlist, playlistable::Playlistable};
 
 #[derive(Debug)]
 pub struct LinearPlaylist {
     name: String,
-    items: Vec<Arc<dyn Playable>>
+    items: Vec<Arc<dyn Playlistable>>
 }
 
 impl LinearPlaylist {
@@ -17,12 +17,16 @@ impl LinearPlaylist {
     }
 
     /// Returns the [`LinearPlaylist`]'s [`Playable`] items.
-    pub fn items(&self) -> &Vec<Arc<dyn Playable>> {
+    pub fn items(&self) -> &Vec<Arc<dyn Playlistable>> {
         &self.items
     }
 }
 
-impl Playable for LinearPlaylist {}
+impl Queueable for LinearPlaylist {
+    fn executables(&self) -> Vec<Arc<dyn crate::queue::executable::Executable>> {
+        todo!()
+    }
+}
 
 impl Shuffleable for LinearPlaylist {}
 

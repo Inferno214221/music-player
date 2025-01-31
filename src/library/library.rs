@@ -8,7 +8,10 @@ use derive_more::derive::{Display, Error};
 use glob::glob;
 
 use crate::playlist::playlist::Playlist;
-use crate::queue::{playable::Playable, shuffleable::Shuffleable};
+use crate::playlist::playlistable::Playlistable;
+use crate::queue::executable::Executable;
+use crate::queue::queueable::Queueable;
+use crate::queue::shuffleable::Shuffleable;
 
 use super::album::Album;
 use super::artist::Artist;
@@ -47,9 +50,15 @@ impl Library {
     }
 }
 
-impl Playable for Library {} // ? Does this make sense
+impl Queueable for Library {
+    fn executables(&self) -> Vec<Arc<dyn Executable>> {
+        self.artists().iter().flat_map(|t| t.executables()).collect()
+    }
+} // ? Does this make sense
 
 impl Shuffleable for Library {}
+
+impl Playlistable for Library {}
 
 impl Display for Library {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
