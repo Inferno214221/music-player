@@ -44,4 +44,6 @@ fn main() {
     let _ = q.play();
     // let _ = q.play();
     thread::sleep(time::Duration::from_secs(10));
+    let _ = q.skip();
+    thread::sleep(time::Duration::from_secs(10));
 }

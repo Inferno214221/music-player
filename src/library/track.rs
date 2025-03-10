@@ -80,12 +80,13 @@ impl Queueable for Arc<Track> {
 
 impl Executable for Track {
     fn exec(&self, player: &mut Player) -> Result<(), PlayError> {
-        let (_sound, controller) = sounds::open_file(self.path())
+        let (sound, controller) = sounds::open_file(self.path())
             .or(Err(PlayError::FailedLoad))?
             .pausable()
             .controllable();
         println!("{:?}", self.path());
         *player.controller() = Some(controller);
+        player.manager().play(Box::new(sound));
         Ok(())
         // Ok(Some(
         //     sounds::open_file(self.path()).or(Err(PlayError::FailedLoad))?
