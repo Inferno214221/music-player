@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::queue::{queueable::Queueable, shuffleable::Shuffleable};
+use crate::queue::{executable::Executable, shuffleable::Shuffleable, queueable::Queueable};
 
 use super::{playlist::Playlist, playlistable::Playlistable};
 
@@ -23,7 +23,7 @@ impl LinearPlaylist {
 }
 
 impl Queueable for LinearPlaylist {
-    fn executables(&self) -> Vec<Arc<dyn crate::queue::executable::Executable>> {
+    fn executables(&self) -> Vec<Arc<dyn Executable>> {
         todo!()
     }
 }

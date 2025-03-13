@@ -15,7 +15,9 @@ impl Queueable for QueuePause {
 
 impl Executable for QueuePause {
     fn exec(&self, player: &mut Player) -> Result<(), PlayError> {
-        player.controller().as_mut().ok_or(PlayError::FailedLoad)?.set_paused(true);
+        if let Some(controller) = player.controller().as_mut() {
+            controller.set_paused(true);
+        }
         Ok(())
     }
 }

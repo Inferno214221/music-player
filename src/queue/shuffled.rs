@@ -7,6 +7,7 @@ use super::{executable::Executable, queueable::Queueable, shuffleable::Shuffleab
 
 #[derive(Debug)]
 pub struct Shuffled {
+    // TODO: reference source as well?
     items: Vec<Arc<dyn Executable>>
 }
 
@@ -14,13 +15,13 @@ impl Shuffled {}
 
 impl Queueable for Shuffled {
     fn executables(&self) -> Vec<Arc<dyn Executable>> {
-        self.items.clone() // TODO: I think this is wrong to.
+        self.items.clone() // TODO: I think this is wrong too.
     }
 }
 
 impl<T> From<&T> for Shuffled where T: Shuffleable {
     fn from(value: &T) -> Self {
-        let mut items = value.executables();
+        let mut items = value.executables().clone();
         items.shuffle(&mut rng());
         Shuffled {
             items

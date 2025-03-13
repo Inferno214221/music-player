@@ -8,4 +8,5 @@ audiotags = "0.5.0"
 awedio = "0.4.1"
 derive_more = { version = "1.0.0", features = ["display", "error"] }
 glob = "0.3.2"
+inputbot = "0.6.0"
 rand = "0.9.0"

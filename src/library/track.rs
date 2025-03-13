@@ -65,13 +65,6 @@ impl Track {
     }
 }
 
-// impl Queueable for Track {
-//     fn executables(&self) -> Vec<Arc<dyn Executable>> {
-//         // FIXME: not sure that this is correct
-//         vec![Arc::new(self.clone())]
-//     }
-// }
-
 impl Queueable for Arc<Track> {
     fn executables(&self) -> Vec<Arc<dyn Executable>> {
         vec![self.clone()]
@@ -88,17 +81,6 @@ impl Executable for Track {
         *player.controller() = Some(controller);
         player.manager().play(Box::new(sound));
         Ok(())
-        // Ok(Some(
-        //     sounds::open_file(self.path()).or(Err(PlayError::FailedLoad))?
-        //         .pausable()
-        //         .controllable()
-        // ))
-
-        // let mut wav = Wav::default();
-        // dbg!(wav.load(dbg!(self.path())).or(Err(PlayError::FailedLoad))?);
-        // let r = sl.play(&wav);
-        // std::thread::sleep(std::time::Duration::from_millis((wav.length() * 1000_f64) as u64));
-        // Ok(r)
     }
 }
 
