@@ -1,4 +1,4 @@
-use std::{cmp::Ordering, fmt::{self, Display, Formatter}, path::{Path, PathBuf}, sync::{Arc, Weak}};
+use std::{any::Any, cmp::Ordering, fmt::{self, Display, Formatter}, path::{Path, PathBuf}, sync::{Arc, Weak}};
 
 use awedio::{sounds::{self}, Sound};
 
@@ -65,9 +65,10 @@ impl Track {
     }
 }
 
-impl Queueable for Arc<Track> {
+impl Queueable for Track {
     fn executables(&self) -> Vec<Arc<dyn Executable>> {
-        vec![self.clone()]
+        vec![Arc::new(self.clone())]
+        // FIXME: pretty sure this is bad, cause Track is cloned rather than Arc
     }
 }
 
@@ -81,6 +82,10 @@ impl Executable for Track {
         *player.controller() = Some(controller);
         player.manager().play(Box::new(sound));
         Ok(())
+    }
+
+    fn name(&self) -> &str {
+        &self.name
     }
 }
 

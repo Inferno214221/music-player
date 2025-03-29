@@ -1,7 +1,9 @@
+use std::any::Any;
 use std::collections::btree_map::Entry;
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::{Display, Write};
-use std::sync::{Arc, Weak};
+use std::path::PathBuf;
+use std::sync::Arc;
 
 use audiotags::Tag;
 use derive_more::derive::{Display, Error};
@@ -22,7 +24,7 @@ use super::track::Track;
 pub struct Library {
     name: String,
     artists: BTreeSet<Arc<Artist>>,
-    playlists: Vec<Weak<dyn Playlist>>
+    playlists: Vec<Arc<Playlist>>
 }
 
 impl Library {
@@ -37,15 +39,16 @@ impl Library {
     }
 
     /// Returns the [`Library`]'s [`Playlist`]s.
-    pub fn playlists(&self) -> &Vec<Weak<dyn Playlist>> {
+    pub fn playlists(&self) -> &Vec<Arc<Playlist>> {
         &self.playlists
     }
 
     pub fn from_path(name: String, dir: String) -> Result<Library, LibraryReadErr> {
+        let info = read_library(dir.clone())?;
         Ok(Library {
             name,
-            artists: read_library(dir.clone())?,
-            playlists: read_playlists(dir)
+            artists: info.artists,
+            playlists: read_playlists(dir, &info.path_to_track)
         })
     }
 }
@@ -54,6 +57,8 @@ impl Queueable for Library {
     fn executables(&self) -> Vec<Arc<dyn Executable>> {
         self.artists().iter().flat_map(|t| t.executables()).collect()
     }
+    
+    fn as_any(&self) -> &dyn Any { self }
 } // ? Does this make sense
 
 impl Shuffleable for Library {}
@@ -100,7 +105,12 @@ impl From<FileReadErr> for LibraryReadErr {
     }
 }
 
-pub fn read_library(dir: String) -> Result<BTreeSet<Arc<Artist>>, LibraryReadErr> {
+pub struct LibraryReadInfo {
+    artists: BTreeSet<Arc<Artist>>,
+    path_to_track: BTreeMap<PathBuf, Arc<Track>>
+}
+
+pub fn read_library(dir: String) -> Result<LibraryReadInfo, LibraryReadErr> {
     let dir_glob = dir + "/*/*/*.mp3";
     let tags = glob(&dir_glob).or(Err(FileReadErr::Pattern))?
         .filter_map(|file| file.ok()).map(|file| Ok((
@@ -108,7 +118,7 @@ pub fn read_library(dir: String) -> Result<BTreeSet<Arc<Artist>>, LibraryReadErr
             file
         ))).collect::<Result<Vec<_>, FileReadErr>>()?;
 
-    let mut tracks = BTreeSet::new();
+    let mut path_to_track: BTreeMap<PathBuf, Arc<Track>> = BTreeMap::new();
     let mut albums: BTreeMap<(&str, &str), Arc<Album>> = BTreeMap::new();
     let mut artists: BTreeMap<&str, Arc<Artist>> = BTreeMap::new();
     for (tag, path) in tags.iter() {
@@ -160,16 +170,23 @@ pub fn read_library(dir: String) -> Result<BTreeSet<Arc<Artist>>, LibraryReadErr
             Arc::get_mut_unchecked(album).insert_track(track.clone())
         };
 
-        tracks.insert(track);
-    };
+        path_to_track.insert(path.to_owned(), track);
+    }
     // println!("{:?}", tracks);
     // println!("{:?}", albums.values().collect::<BTreeSet<_>>());
     // println!("{:?}", artists.values().collect::<BTreeSet<_>>());
 
-    Ok(artists.into_values().collect())
+    Ok(LibraryReadInfo {
+        artists: artists.into_values().collect(),
+        path_to_track
+    })
 }
 
-pub fn read_playlists(_dir: String) -> Vec<Weak<dyn Playlist>> {
-    // TODO
+pub fn read_playlists(_dir: String, _path_to_tracks: &BTreeMap<PathBuf, Arc<Track>>) -> Vec<Arc<Playlist>> {
+    /*
+        TODO
+        Find all playlist files (or load them from memory)
+        Read all and create a list
+     */
     Vec::new()
 }

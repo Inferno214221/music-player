@@ -1,6 +1,8 @@
+use std::fmt::Write;
+use std::fmt;
+use std::fmt::Display;
 use std::sync::Arc;
-use crate::queue::queue_item::QueueItem;
-use super::{executable::PlayError, player::Player, queueable::Queueable};
+use super::{executable::PlayError, player::Player, queueable::Queueable, queue_item::QueueItem};
 
 #[derive(Debug)]
 pub struct Queue {
@@ -30,9 +32,13 @@ impl Queue {
         self.items.get_mut(self.index)
     }
 
-    /// Inserts the provided [`QueueItem`] into the [`Queue`] after the current item.
     pub fn add_next(&mut self, queueable: Arc<dyn Queueable>) {
-        // TODO: need two _next_ functions, one which decomposes the current queued item.
+        self.decompose(self.index);
+        self.add_after(queueable);
+    }
+
+    /// Inserts the provided [`QueueItem`] into the [`Queue`] after the current item.
+    pub fn add_after(&mut self, queueable: Arc<dyn Queueable>) {
         let new_index = match self.current() {
             Some(_) => self.index + 1,
             None => self.index
@@ -42,7 +48,7 @@ impl Queue {
 
     /// Appends the provided [`QueueItem`] to the end of the [`Queue`].
     pub fn add_end(&mut self, queueable: Arc<dyn Queueable>) {
-        self.items().push(QueueItem::from(queueable));
+        self.items.push(QueueItem::from(queueable));
     }
 
     /// Plays the current executable.
@@ -90,6 +96,31 @@ impl Queue {
     
     pub fn stop(&mut self) {
         self.player.manager().clear();
+    }
+
+    pub fn decompose(&mut self, target_index: usize) {
+        let item = self.items()[target_index].clone(); // should move?
+        self.items.splice(
+            target_index..(target_index + 1),
+            item.executables().iter().map(
+                |e| QueueItem::from(e.clone())
+            )
+        );
+
+        if self.index >= target_index {
+            self.index += item.index();
+        }
+    }
+}
+
+impl Display for Queue {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Que (index: {}) [\n{}]", self.index,
+            self.items.iter().map(|i| i.to_string()).fold(String::new(), |mut output, b| {
+                let _ = writeln!(output, "  {}", b.to_string().replace('\n', "\n  "));
+                output
+            })
+        )
     }
 }
 

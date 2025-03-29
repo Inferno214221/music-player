@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{any::Any, sync::Arc};
 
 use derive_more::derive::Display;
 
@@ -20,14 +20,18 @@ impl Executable for QueuePause {
         }
         Ok(())
     }
+
+    fn name(&self) -> &str {
+        "QueuePause"
+    }
 }
 
 #[derive(Debug, Display, Clone, Copy)]
 pub struct QueueStop;
 
-impl Queueable for Arc<QueueStop> {
+impl Queueable for QueueStop {
     fn executables(&self) -> Vec<Arc<dyn Executable>> {
-        vec![self.clone()]
+        vec![Arc::new(*self)]
     }
 }
 
@@ -35,5 +39,9 @@ impl Executable for QueueStop {
     fn exec(&self, player: &mut Player) -> Result<(), PlayError> {
         player.manager().clear();
         Ok(())
+    }
+
+    fn name(&self) -> &str {
+        "QueueStop"
     }
 }

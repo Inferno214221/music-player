@@ -1,4 +1,4 @@
-use std::{cmp::Ordering, collections::BTreeSet, fmt::{self, Display, Formatter, Write}, sync::{Arc, Weak}};
+use std::{any::Any, cmp::Ordering, collections::BTreeSet, fmt::{self, Display, Formatter, Write}, sync::{Arc, Weak}};
 
 use crate::{playlist::playlistable::Playlistable, queue::{executable::Executable, queueable::Queueable, shuffleable::Shuffleable}};
 
@@ -85,6 +85,8 @@ impl Queueable for Album {
     fn executables(&self) -> Vec<Arc<dyn Executable>> {
         self.tracks().iter().flat_map(|t| t.executables()).collect()
     }
+    
+    fn as_any(&self) -> &dyn Any { self }
 }
 
 impl Shuffleable for Album {}

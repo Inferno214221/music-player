@@ -1,10 +1,9 @@
 use std::fmt::{Debug, Display};
-
 use derive_more::derive::{self, Error};
+use super::{queueable::Queueable, player::Player};
 
-use super::player::Player;
-
-pub trait Executable: Display + Debug + Send + Sync {
+pub trait Executable: Queueable + Display + Debug + Send + Sync {
+    fn name(&self) -> &str;
     fn exec(&self, player: &mut Player) -> Result<(), PlayError>;
 }
 
