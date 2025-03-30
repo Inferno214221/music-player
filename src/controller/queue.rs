@@ -1,14 +1,12 @@
-use std::fmt::Write;
-use std::fmt;
-use std::fmt::Display;
-use std::sync::Arc;
-use super::{executable::PlayError, player::Player, queueable::Queueable, queue_item::QueueItem};
+use std::{fmt::{self, Write, Display}, sync::Arc};
+
+use crate::queue::{PlayError, Playback, Queueable, Queued};
 
 #[derive(Debug)]
 pub struct Queue {
-    items: Vec<QueueItem>,
+    items: Vec<Queued>,
     index: usize,
-    player: Player
+    player: Playback
 }
 
 impl Queue {
@@ -17,18 +15,18 @@ impl Queue {
         Queue {
             items: Vec::new(),
             index: 0,
-            player: Player::new().unwrap()
+            player: Playback::new().unwrap()
         }
     }
 
     /// Returns a mutable reference to the [`Queue`]'s items.
-    pub fn items(&mut self) -> &mut Vec<QueueItem> {
+    pub fn items(&mut self) -> &mut Vec<Queued> {
         &mut self.items
     }
 
     /// Returns a mutable reference to the [`Queue`]'s cursor. The cursor is created now if it
     /// hasn't been already.
-    pub fn current(&mut self) -> Option<&mut QueueItem> {
+    pub fn current(&mut self) -> Option<&mut Queued> {
         self.items.get_mut(self.index)
     }
 
@@ -37,18 +35,18 @@ impl Queue {
         self.add_after(queueable);
     }
 
-    /// Inserts the provided [`QueueItem`] into the [`Queue`] after the current item.
+    /// Inserts the provided [`Queued`] into the [`Queue`] after the current item.
     pub fn add_after(&mut self, queueable: Arc<dyn Queueable>) {
         let new_index = match self.current() {
             Some(_) => self.index + 1,
             None => self.index
         };
-        self.items.insert(new_index, QueueItem::from(queueable));
+        self.items.insert(new_index, Queued::from(queueable));
     }
 
-    /// Appends the provided [`QueueItem`] to the end of the [`Queue`].
+    /// Appends the provided [`Queued`] to the end of the [`Queue`].
     pub fn add_end(&mut self, queueable: Arc<dyn Queueable>) {
-        self.items.push(QueueItem::from(queueable));
+        self.items.push(Queued::from(queueable));
     }
 
     /// Plays the current executable.
@@ -103,7 +101,7 @@ impl Queue {
         self.items.splice(
             target_index..(target_index + 1),
             item.executables().iter().map(
-                |e| QueueItem::from(e.clone())
+                |e| Queued::from(e.clone())
             )
         );
 

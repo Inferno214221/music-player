@@ -1,6 +1,6 @@
 use std::{cmp::Ordering, collections::BTreeSet, fmt::{self, Display, Formatter, Write}, sync::{Arc, Weak}};
 
-use crate::{playlist::playlistable::{PlaylistItemType, Playlistable}, queue::{executable::Executable, queueable::Queueable, shuffleable::Shuffleable}};
+use crate::{playlist::{PlaylistItemType, Playlistable}, queue::{Executable, Queueable, Shuffleable}};
 
 use super::{artist::Artist, track::Track};
 

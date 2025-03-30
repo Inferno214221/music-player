@@ -1,6 +1,6 @@
 use std::{cmp::Ordering, fmt::Debug};
 
-use crate::{library::{album::Album, artist::Artist, track::Track}, queue::queueable::Queueable};
+use crate::{media::{Album, Artist, Track}, queue::Queueable};
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum PlaylistItemType<'a> {

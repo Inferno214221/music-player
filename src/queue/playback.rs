@@ -4,16 +4,16 @@ use awedio::{backends::{CpalBackend, CpalBackendError}, manager::Manager, sounds
 
 pub type OptionalController = Option<Controller<Pausable<Box<dyn Sound>>>>;
 
-pub struct Player {
+pub struct Playback {
     manager: Manager,
     controller: OptionalController,
     _backend: CpalBackend
 }
 
-impl Player {
-    pub fn new() -> Result<Player, CpalBackendError> { // TODO: change error type
+impl Playback {
+    pub fn new() -> Result<Playback, CpalBackendError> { // TODO: change error type
         let (manager, _backend) = awedio::start()?;
-        Ok(Player {
+        Ok(Playback {
             manager,
             controller: None,
             _backend
@@ -29,9 +29,9 @@ impl Player {
     }
 }
 
-impl Debug for Player {
+impl Debug for Playback {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Player")
+        f.debug_struct("Playback")
         .field("manager", &self.manager)
         .field("controller", &"&self.controller")
         .field("_backend", &"&self._backend")

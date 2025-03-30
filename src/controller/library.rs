@@ -1,22 +1,10 @@
-use std::collections::btree_map::Entry;
-use std::collections::{BTreeMap, BTreeSet};
-use std::fmt::{Display, Write};
-use std::path::PathBuf;
-use std::sync::Arc;
+use std::{collections::{btree_map::Entry, BTreeMap, BTreeSet}, fmt::{Display, Write}, path::PathBuf, sync::Arc};
 
 use audiotags::Tag;
 use derive_more::derive::{Display, Error};
 use glob::glob;
 
-use crate::playlist::playlist::Playlist;
-use crate::playlist::playlistable::Playlistable;
-use crate::queue::executable::Executable;
-use crate::queue::queueable::Queueable;
-use crate::queue::shuffleable::Shuffleable;
-
-use super::album::Album;
-use super::artist::Artist;
-use super::track::Track;
+use crate::{media::{Artist, Album, Track}, playlist::Playlist};
 
 // Library holds ownership the whole way down.
 #[derive(Debug)]
@@ -59,8 +47,6 @@ impl Library {
 // } // ? Does this make sense
 
 // impl Shuffleable for Library {}
-
-// impl Playlistable for Library {}
 
 impl Display for Library {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

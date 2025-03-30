@@ -2,7 +2,7 @@ use std::{cmp::Ordering, fmt::{self, Display, Formatter}, path::{Path, PathBuf},
 
 use awedio::{sounds::{self}, Sound};
 
-use crate::{playlist::playlistable::{PlaylistItemType, Playlistable}, queue::{executable::{Executable, PlayError}, player::Player, queueable::Queueable}};
+use crate::{playlist::{PlaylistItemType, Playlistable}, queue::{Executable, PlayError, Playback, Queueable}};
 
 use super::album::Album;
 
@@ -73,7 +73,7 @@ impl Queueable for Track {
 }
 
 impl Executable for Track {
-    fn exec(&self, player: &mut Player) -> Result<(), PlayError> {
+    fn exec(&self, player: &mut Playback) -> Result<(), PlayError> {
         let (sound, controller) = sounds::open_file(self.path())
             .or(Err(PlayError::FailedLoad))?
             .pausable()

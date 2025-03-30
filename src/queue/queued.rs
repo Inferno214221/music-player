@@ -1,15 +1,15 @@
+use std::{fmt::{self, Write, Debug, Display}, sync::Arc};
+
 use super::{executable::Executable, queueable::Queueable};
-use std::fmt::{self, Write, Debug, Display};
-use std::sync::Arc;
 
 #[derive(Debug, Clone)]
-pub struct QueueItem {
+pub struct Queued {
     index: usize,
     items: Vec<Arc<dyn Executable>>,
     _src: Arc<dyn Queueable>,
 }
 
-impl QueueItem {
+impl Queued {
     pub fn current(&mut self) -> Option<&mut Arc<dyn Executable>> {
         self.items.get_mut(self.index)
     }
@@ -39,9 +39,9 @@ impl QueueItem {
     }
 }
 
-impl Display for QueueItem {
+impl Display for Queued {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "QueueItem (index: {}) [\n{}]", self.index,
+        write!(f, "Queued (index: {}) [\n{}]", self.index,
             self.items.iter().map(|a| a.name()).fold(String::new(), |mut output, b| {
                 let _ = writeln!(output, "  {}", b.to_string().replace('\n', "\n  "));
                 output
@@ -50,9 +50,9 @@ impl Display for QueueItem {
     }
 }
 
-impl<T> From<Arc<T>> for QueueItem where T: Queueable + 'static {
+impl<T> From<Arc<T>> for Queued where T: Queueable + 'static {
     fn from(value: Arc<T>) -> Self {
-        QueueItem {
+        Queued {
             index: 0,
             items: value.executables(),
             _src: value,
@@ -60,9 +60,9 @@ impl<T> From<Arc<T>> for QueueItem where T: Queueable + 'static {
     }
 }
 
-impl From<Arc<dyn Queueable>> for QueueItem {
+impl From<Arc<dyn Queueable>> for Queued {
     fn from(value: Arc<dyn Queueable>) -> Self {
-        QueueItem {
+        Queued {
             index: 0,
             items: value.executables(),
             _src: value,
@@ -70,9 +70,9 @@ impl From<Arc<dyn Queueable>> for QueueItem {
     }
 }
 
-impl From<Arc<dyn Executable>> for QueueItem {
+impl From<Arc<dyn Executable>> for Queued {
     fn from(value: Arc<dyn Executable>) -> Self {
-        QueueItem {
+        Queued {
             index: 0,
             items: vec![value.clone()],
             _src: value,

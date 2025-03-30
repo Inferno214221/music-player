@@ -1,2 +1,5 @@
-pub mod playlist;
-pub mod playlistable;
+mod playlist;
+mod playlistable;
+
+pub use playlist::*;
+pub use playlistable::*;

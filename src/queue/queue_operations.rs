@@ -2,7 +2,7 @@ use std::{any::Any, sync::Arc};
 
 use derive_more::derive::Display;
 
-use super::{executable::{Executable, PlayError}, player::Player, queueable::Queueable};
+use super::{executable::{Executable, PlayError}, player::Playback, queueable::Queueable};
 
 #[derive(Debug, Display, Clone, Copy)]
 pub struct QueuePause;
@@ -14,7 +14,7 @@ impl Queueable for QueuePause {
 }
 
 impl Executable for QueuePause {
-    fn exec(&self, player: &mut Player) -> Result<(), PlayError> {
+    fn exec(&self, player: &mut Playback) -> Result<(), PlayError> {
         if let Some(controller) = player.controller().as_mut() {
             controller.set_paused(true);
         }
@@ -36,7 +36,7 @@ impl Queueable for QueueStop {
 }
 
 impl Executable for QueueStop {
-    fn exec(&self, player: &mut Player) -> Result<(), PlayError> {
+    fn exec(&self, player: &mut Playback) -> Result<(), PlayError> {
         player.manager().clear();
         Ok(())
     }

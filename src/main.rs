@@ -4,12 +4,12 @@
 
 #![allow(clippy::module_inception)] // TODO: better module names
 
-use library::library::Library;
-use queue::queue::Queue;
-
-pub mod library;
+pub mod controller;
+pub mod media;
 pub mod playlist;
 pub mod queue;
+
+use controller::{Library, Queue};
 
 fn main() {
     let l = Library::from_path(
@@ -32,7 +32,7 @@ fn main() {
             .tracks().iter().find(|a| a.name() == "Venice Queen").unwrap().clone()
     );
     for _ in 1..14 {
-        q.skip();
+        let _ = q.skip();
     }
     println!("{}", &q);
     println!("{}", &q.current().unwrap().current().unwrap());

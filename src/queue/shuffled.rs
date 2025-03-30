@@ -1,7 +1,6 @@
 use std::{fmt::{self, Display, Formatter, Write}, sync::Arc};
 
-use rand::rng;
-use rand::seq::SliceRandom;
+use rand::{rng, seq::SliceRandom};
 
 use super::{executable::Executable, queueable::Queueable, shuffleable::Shuffleable};
 

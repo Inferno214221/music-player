@@ -2,7 +2,7 @@ use std::{collections::{BTreeMap, BTreeSet}, fs, path::{Path, PathBuf}, sync::Ar
 
 use derive_more::derive::{Display, Error};
 
-use crate::{library::track::Track, queue::{executable::Executable, queueable::Queueable, shuffleable::Shuffleable}};
+use crate::{media::Track, queue::{Executable, Queueable, Shuffleable}};
 
 use super::playlistable::Playlistable;
 
