@@ -1,6 +1,6 @@
-use std::{any::Any, cmp::Ordering, collections::BTreeSet, fmt::{self, Display, Formatter, Write}, sync::Arc};
+use std::{cmp::Ordering, collections::BTreeSet, fmt::{self, Display, Formatter, Write}, sync::Arc};
 
-use crate::{playlist::playlistable::Playlistable, queue::{executable::Executable, queueable::Queueable, shuffleable::Shuffleable}};
+use crate::{playlist::playlistable::{PlaylistItemType, Playlistable}, queue::{executable::Executable, queueable::Queueable, shuffleable::Shuffleable}};
 
 use super::album::Album;
 
@@ -46,7 +46,11 @@ impl Queueable for Artist {
 
 impl Shuffleable for Artist {}
 
-impl Playlistable for Artist {}
+impl Playlistable for Artist {
+    fn as_item_type(&self) -> PlaylistItemType {
+        PlaylistItemType::Artist(self)
+    }
+}
 
 impl Display for Artist {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {

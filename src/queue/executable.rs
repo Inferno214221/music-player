@@ -10,4 +10,5 @@ pub trait Executable: Queueable + Display + Debug + Send + Sync {
 #[derive(Debug, derive::Display, Error, PartialEq)]
 pub enum PlayError {
     FailedLoad,
+    MissingItem
 }

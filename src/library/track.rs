@@ -1,8 +1,8 @@
-use std::{any::Any, cmp::Ordering, fmt::{self, Display, Formatter}, path::{Path, PathBuf}, sync::{Arc, Weak}};
+use std::{cmp::Ordering, fmt::{self, Display, Formatter}, path::{Path, PathBuf}, sync::{Arc, Weak}};
 
 use awedio::{sounds::{self}, Sound};
 
-use crate::{playlist::playlistable::Playlistable, queue::{executable::{Executable, PlayError}, player::Player, queueable::Queueable}};
+use crate::{playlist::playlistable::{PlaylistItemType, Playlistable}, queue::{executable::{Executable, PlayError}, player::Player, queueable::Queueable}};
 
 use super::album::Album;
 
@@ -89,7 +89,11 @@ impl Executable for Track {
     }
 }
 
-impl Playlistable for Track {}
+impl Playlistable for Track {
+    fn as_item_type(&self) -> PlaylistItemType {
+        PlaylistItemType::Track(self)
+    }
+}
 
 impl Display for Track {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {

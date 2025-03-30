@@ -1,6 +1,6 @@
-use std::{any::Any, cmp::Ordering, collections::BTreeSet, fmt::{self, Display, Formatter, Write}, sync::{Arc, Weak}};
+use std::{cmp::Ordering, collections::BTreeSet, fmt::{self, Display, Formatter, Write}, sync::{Arc, Weak}};
 
-use crate::{playlist::playlistable::Playlistable, queue::{executable::Executable, queueable::Queueable, shuffleable::Shuffleable}};
+use crate::{playlist::playlistable::{PlaylistItemType, Playlistable}, queue::{executable::Executable, queueable::Queueable, shuffleable::Shuffleable}};
 
 use super::{artist::Artist, track::Track};
 
@@ -85,13 +85,15 @@ impl Queueable for Album {
     fn executables(&self) -> Vec<Arc<dyn Executable>> {
         self.tracks().iter().flat_map(|t| t.executables()).collect()
     }
-    
-    fn as_any(&self) -> &dyn Any { self }
 }
 
 impl Shuffleable for Album {}
 
-impl Playlistable for Album {}
+impl Playlistable for Album {
+    fn as_item_type(&self) -> PlaylistItemType {
+        PlaylistItemType::Album(self)
+    }
+}
 
 impl Display for Album {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {

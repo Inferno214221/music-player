@@ -1,4 +1,3 @@
-use std::any::Any;
 use std::collections::btree_map::Entry;
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::{Display, Write};
@@ -53,17 +52,15 @@ impl Library {
     }
 }
 
-impl Queueable for Library {
-    fn executables(&self) -> Vec<Arc<dyn Executable>> {
-        self.artists().iter().flat_map(|t| t.executables()).collect()
-    }
-    
-    fn as_any(&self) -> &dyn Any { self }
-} // ? Does this make sense
+// impl Queueable for Library {
+//     fn executables(&self) -> Vec<Arc<dyn Executable>> {
+//         self.artists().iter().flat_map(|t| t.executables()).collect()
+//     }
+// } // ? Does this make sense
 
-impl Shuffleable for Library {}
+// impl Shuffleable for Library {}
 
-impl Playlistable for Library {}
+// impl Playlistable for Library {}
 
 impl Display for Library {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

@@ -1,8 +1,10 @@
-use std::{any::Any, collections::{BTreeMap, BTreeSet}, fs, path::{Path, PathBuf}, sync::Arc};
+use std::{collections::{BTreeMap, BTreeSet}, fs, path::{Path, PathBuf}, sync::Arc};
 
 use derive_more::derive::{Display, Error};
 
 use crate::{library::track::Track, queue::{executable::Executable, queueable::Queueable, shuffleable::Shuffleable}};
+
+use super::playlistable::Playlistable;
 
 #[derive(Debug)]
 pub struct Playlist {
@@ -13,10 +15,10 @@ pub struct Playlist {
 #[derive(Debug)]
 pub enum PlaylistType {
     Linear {
-        items: Vec<Arc<dyn Queueable>>
+        items: Vec<Arc<dyn Playlistable>>
     },
     Sorted {
-        items: BTreeSet<Arc<dyn Queueable>>
+        items: BTreeSet<Arc<dyn Playlistable>>
     }
 }
 
@@ -36,7 +38,7 @@ impl Playlist {
         &self.name
     }
 
-    pub fn items(&self) -> Box<dyn Iterator<Item = &Arc<dyn Queueable>> + '_> {
+    pub fn items(&self) -> Box<dyn Iterator<Item = &Arc<dyn Playlistable>> + '_> {
         match &self.p_type {
             Linear{items} => Box::new(items.into_iter()),
             Sorted{items} => Box::new(items.into_iter())
@@ -70,9 +72,9 @@ impl Playlist {
                             }
                             // TODO: store and read more than tracks
                             // TODO: notify about failed gets
-                            path_to_tracks.get(&track_path).map(|t| t.clone() as Arc<dyn Queueable>)
+                            path_to_tracks.get(&track_path).map(|t| t.clone() as Arc<dyn Playlistable>)
                         })
-                        .collect() // TODO: need to think this one out, should a sorted playlist store more than tracks??
+                        .collect()
                 }
             } else {
                 Linear {
@@ -89,7 +91,7 @@ impl Playlist {
                             }
                             // TODO: store and read more than tracks
                             // TODO: notify about failed gets
-                            path_to_tracks.get(&track_path).map(|t| t.clone() as Arc<dyn Queueable>)
+                            path_to_tracks.get(&track_path).map(|t| t.clone() as Arc<dyn Playlistable>)
                         })
                         .collect()
                 }

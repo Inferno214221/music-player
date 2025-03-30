@@ -55,8 +55,8 @@ impl Queue {
     pub fn play(&mut self) -> Result<(), PlayError> {
         self.player.manager().clear();
         // self.items[self.index]
-        self.current().unwrap()
-            .current().unwrap()
+        self.current().ok_or(PlayError::MissingItem)?
+            .current().ok_or(PlayError::MissingItem)?
             .clone().exec(&mut self.player) // TODO: should try to remove this second clone.
             // .exec(&mut self.player)
         // TODO: store timestamps.
@@ -66,13 +66,13 @@ impl Queue {
     pub fn skip(&mut self) -> Result<(), PlayError> {
         // There are currently two layers of lists nested, need to iterate the inner and then iterate the outer on overflow
         self.player.manager().clear();
-        let next = self.current().unwrap().skip();
+        let next = self.current().ok_or(PlayError::MissingItem)?.skip();
         if let Some(n) = next {
             n.clone().exec(&mut self.player)
         } else {
             self.index += 1;
-            self.current().unwrap()
-                .current().unwrap()
+            self.current().ok_or(PlayError::MissingItem)?
+                .current().ok_or(PlayError::MissingItem)?
                 .clone().exec(&mut self.player)
         }
     }
