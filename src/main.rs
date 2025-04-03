@@ -1,15 +1,17 @@
-#![feature(linked_list_cursors)]
 #![feature(get_mut_unchecked)]
 #![feature(path_file_prefix)]
 
-#![allow(clippy::module_inception)] // TODO: better module names
+#![allow(clippy::module_inception)]
 
 pub mod controller;
 pub mod media;
 pub mod playlist;
 pub mod queue;
 
-use controller::{Library, Queue};
+use std::{path::PathBuf, sync::Arc};
+
+use controller::{read_library, Library, Queue};
+use playlist::Playlist;
 
 fn main() {
     let l = Library::from_path(
@@ -39,6 +41,13 @@ fn main() {
     q.decompose(1);
     println!("{}", &q);
     println!("{}", &q.current().unwrap().current().unwrap());
+
+    let p = Arc::new(Playlist::from_file(
+        PathBuf::from(String::from("/home/inferno214221/music/playlists/new.m3u")).as_path(),
+        &read_library("/home/inferno214221/music/library".into()).unwrap().path_to_track
+    ).unwrap());
+    q.add_end(p.clone());
+    println!("{q}");
 
     // let _ = q.play();
     // thread::sleep(Duration::from_secs(10));

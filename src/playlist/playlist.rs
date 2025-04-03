@@ -27,7 +27,8 @@ use PlaylistType::*;
 #[derive(Debug, Display, Error)]
 pub enum PlaylistParseErr {
     ReadError,
-    FormatError
+    FormatError,
+    PathError
 }
 
 use PlaylistParseErr::*;
@@ -45,12 +46,30 @@ impl Playlist {
         }
     }
 
-    pub fn read(path: &Path, path_to_tracks: &BTreeMap<PathBuf, Arc<Track>>)
+    pub fn from_file(path: &Path, path_to_tracks: &BTreeMap<PathBuf, Arc<Track>>)
         -> Result<Playlist, PlaylistParseErr> {
         // Check type (Linear as default)
         let file_contents = fs::read_to_string(path).or(Err(ReadError))?;
         // Regex match for sorted playlist
         let sorted = true;
+        let items = file_contents.split('\n')
+            .filter(|l| !l.starts_with('#'))
+            // TODO: store and read more than tracks
+            .filter_map(|l| {
+                // TODO: notify about failed gets
+                let mut track_path = PathBuf::from(l);
+                if !track_path.is_absolute() {
+                    // TODO: if it starts with nothing, assume its relative to the library
+                    track_path = PathBuf::from(
+                        path.parent().expect("Playlist has a parent directory")
+                    );
+                    track_path.push(PathBuf::from(l));
+                }
+                path_to_tracks.get(
+                    &fs::canonicalize(track_path).ok()? // TODO: report on this too
+                ).map(|t| t.clone() as Arc<dyn Playlistable>)
+            });
+
         Ok(Playlist {
             name: path.file_prefix()
                 .ok_or(FormatError)?
@@ -59,41 +78,11 @@ impl Playlist {
                 .to_owned(), // OR read attribute
             p_type: if sorted {
                 Sorted {
-                    items: file_contents
-                        .split('\n')
-                        .filter(|l| !l.starts_with('#'))
-                        .filter_map(|l| {
-                            let mut track_path = PathBuf::from(l);
-                            if !track_path.is_absolute() {
-                                track_path = PathBuf::from(
-                                    path.parent().expect("Playlist has a parent directory")
-                                );
-                                track_path.push(track_path.clone());
-                            }
-                            // TODO: store and read more than tracks
-                            // TODO: notify about failed gets
-                            path_to_tracks.get(&track_path).map(|t| t.clone() as Arc<dyn Playlistable>)
-                        })
-                        .collect()
+                    items: items.collect()
                 }
             } else {
                 Linear {
-                    items: file_contents
-                        .split('\n')
-                        .filter(|l| !l.starts_with('#'))
-                        .filter_map(|l| {
-                            let mut track_path = PathBuf::from(l);
-                            if !track_path.is_absolute() {
-                                track_path = PathBuf::from(
-                                    path.parent().expect("Playlist has a parent directory")
-                                );
-                                track_path.push(track_path.clone());
-                            }
-                            // TODO: store and read more than tracks
-                            // TODO: notify about failed gets
-                            path_to_tracks.get(&track_path).map(|t| t.clone() as Arc<dyn Playlistable>)
-                        })
-                        .collect()
+                    items: items.collect()
                 }
             }
         })

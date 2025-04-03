@@ -10,8 +10,10 @@ use crate::{media::{Artist, Album, Track}, playlist::Playlist};
 #[derive(Debug)]
 pub struct Library {
     name: String,
+    path: PathBuf,
     artists: BTreeSet<Arc<Artist>>,
     playlists: Vec<Arc<Playlist>>
+    // At the moment, playlists are managed by a Library, I'll probably change that in the future
 }
 
 impl Library {
@@ -31,9 +33,11 @@ impl Library {
     }
 
     pub fn from_path(name: String, dir: String) -> Result<Library, LibraryReadErr> {
+        // FIXME: passing Strings by value
         let info = read_library(dir.clone())?;
         Ok(Library {
             name,
+            path: PathBuf::from(dir.clone()),
             artists: info.artists,
             playlists: read_playlists(dir, &info.path_to_track)
         })
@@ -90,7 +94,8 @@ impl From<FileReadErr> for LibraryReadErr {
 
 pub struct LibraryReadInfo {
     artists: BTreeSet<Arc<Artist>>,
-    path_to_track: BTreeMap<PathBuf, Arc<Track>>
+    pub path_to_track: BTreeMap<PathBuf, Arc<Track>>
+    // TODO: need to provide several maps for playlist creation
 }
 
 pub fn read_library(dir: String) -> Result<LibraryReadInfo, LibraryReadErr> {
